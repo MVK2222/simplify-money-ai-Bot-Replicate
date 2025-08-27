@@ -4,8 +4,7 @@ import os
 import httpx
 
 # Ideally load from ENV, not hardcode
-# GOLD_API_KEY = os.getenv("GOLD_API_KEY")
-GOLD_API_KEY = "goldapi-f9u0h6smesrno3n-io"
+GOLD_API_KEY = os.getenv("GOLD_API_KEY")
 GOLD_API_URL = "https://www.goldapi.io/api/XAU/INR"  # Gold price in INR
 
 async def get_live_gold_price() -> float:
