@@ -1,9 +1,7 @@
 import json
 import logging
 import google.generativeai as genai
-from core.chat_manager import get_history, add_to_history
-from core.prompts import build_gemini_prompt, build_chatbot_prompt
-from services.gold_price import get_live_gold_price
+import os
 
 
 async def call_gemini_api(prompt: str) -> dict:
@@ -11,8 +9,7 @@ async def call_gemini_api(prompt: str) -> dict:
     Call Gemini API via official SDK and return parsed JSON response.
     """
     try:
-        genai.configure(api_key="AIzaSyApn7kcgtCyFrfz_j_2vwpwVdHTIuIy7lo")
-        # genai.configure(api_key=os.environ.get("GOOGLE_API_KEY"))
+        genai.configure(api_key=os.environ.get("GOOGLE_API_KEY"))
         model = genai.GenerativeModel("gemini-2.5-flash")
         logging.info("Gemini AI initialized for enhanced detection")
         response = model.generate_content(prompt)
