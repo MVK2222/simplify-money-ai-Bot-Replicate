@@ -4,9 +4,14 @@ from core.prompts import build_gemini_prompt, build_chatbot_prompt
 from services.gemini_client import call_gemini_api
 from core.chat_manager import add_to_history, get_history
 from services.gold_price import get_live_gold_price
-from database.db import get_session
-from database.models import GoldOrder
 from sqlmodel import Session
+from routers.gold_purchase import (
+    kyc_step,
+    quantity_step,
+    payment_step,
+    vault_step,
+    receipt_step,
+)
 
 
 async def process_user_query(user_id: str, user_query: str, session: Session) -> dict:
@@ -26,7 +31,7 @@ async def process_user_query(user_id: str, user_query: str, session: Session) ->
     # Helper: format conversation history into string
     def format_history(history: list) -> str:
         chat_text = ""
-        for turn in history[-10:]:  # last 10 exchanges for context
+        for turn in history[-5:]:  # last 10 exchanges for context
             role = "User" if turn["role"] == "user" else "Assistant"
             chat_text += f"{role}: {turn['content']}\n"
         return chat_text
@@ -55,41 +60,49 @@ async def process_user_query(user_id: str, user_query: str, session: Session) ->
 
     # Step 2: If ready_to_invest, switch to chatbot prompt
     if intent == "ready_to_invest":
-        logging.info(
-            f"[DEBUG] Using chatbot prompt for stepwise gold purchase for user {user_id}"
-        )
         chatbot_prompt = build_chatbot_prompt(user_query, history)
         result = await call_gemini_api(chatbot_prompt)
+        stage = result.get("stage", "exploration")
 
-        # Save step to DB if stage corresponds to a gold purchase step
-        stage = result.get("stage")
-        if stage in [
-            "ready_to_buy",
-            "buy_step_1",
-            "buy_step_2",
-            "buy_step_3",
-            "buy_step_4",
-            "buy_step_5",
-        ]:
-            order = GoldOrder(
-                user_id=user_id,
-                step=stage.upper(),
-                amount=result.get("meta", {}).get("amount"),
-                payment_method=result.get("meta", {}).get("payment_method"),
+        # Step 3: Simulate gold purchase API calls based on stage
+        if stage == "buy_step_1":
+            resp = kyc_step(
+                {"user_id": int(user_id), "kyc_details": "Dummy KYC"}, session
             )
-            session.add(order)
-            session.commit()
-            session.refresh(order)
-            result["order_id"] = order.id
+            result["answer"] += f" ✅ KYC done. Next: {resp['next_endpoint']}"
+            result["buy_link"] = resp["next_endpoint"]
 
-        # Provide next action link from Gemini
-        result["buy_link"] = result.get("buy_link", "")
+        elif stage == "buy_step_2":
+            # Use live gold price if available
+            grams, amount = 1.0, None  # example default, could be dynamic
+            resp = quantity_step(
+                {"user_id": int(user_id), "grams": grams, "amount": amount}, session
+            )
+            result["answer"] += f" ✅ Quantity set. Next: {resp['next_endpoint']}"
+            result["buy_link"] = resp["next_endpoint"]
+
+        elif stage == "buy_step_3":
+            resp = payment_step(
+                {"user_id": int(user_id), "payment_method": "UPI", "amount": 5000},
+                session,
+            )
+            result["answer"] += f" ✅ Payment confirmed. Next: {resp['next_endpoint']}"
+            result["buy_link"] = resp["next_endpoint"]
+
+        elif stage == "buy_step_4":
+            resp = vault_step({"user_id": int(user_id), "confirm": True}, session)
+            result["answer"] += f" ✅ Vault confirmed. Next: {resp['next_endpoint']}"
+            result["buy_link"] = resp["next_endpoint"]
+
+        elif stage == "buy_step_5":
+            resp = receipt_step({"user_id": int(user_id)}, session)
+            result["answer"] += f" ✅ Purchase complete. Receipt generated."
+            result["buy_link"] = ""
 
     else:
-        logging.info(f"[DEBUG] Using intent response for user {user_id}")
+        # For other intents, just return Gemini’s answer
         result = intent_response
-
-    # Save assistant response to history
+        # Save assistant response
     add_to_history(user_id, "assistant", result.get("answer", ""))
 
     return result
