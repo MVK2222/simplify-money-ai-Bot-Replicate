@@ -10,3 +10,4 @@ SQLAlchemy
 httpx
 protobuf
 google.generativeai
+bcrypt
