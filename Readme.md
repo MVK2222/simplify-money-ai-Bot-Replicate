@@ -25,11 +25,10 @@ You can use these endpoints to interact with the API or explore available routes
 9. [Example Queries & Test Cases](#example-queries--test-cases)
 10. [Planned Features & Future Enhancements](#planned-features--future-enhancements)
 11. [Solution Summary](#solution-summary)
-12. [Submission Notes](#submission-notes)
 
 ---
 
-## Project Overview
+## Project Overview 
 This backend project simulates a **financial guidance app** focusing on **digital gold investment**.  
 Key functionalities:
 - **AI Chat**: Context-aware chat with Gemini AI for intent detection and conversation guidance.
@@ -205,19 +204,6 @@ uvicorn main:app --reload
 * `"How much is the gold price today?"`
 * `"Yes, I want to proceed"`
 * `"Cancel the purchase"` (to test irrelevant/abort handling)
-
----
-
-## Planned Features & Enhancements
-
-* Frontend integration (React / Flutter)
-* Real payment gateway integration
-* Real-time gold price fetching
-* Enhanced AI prompts for more natural conversation
-* Full automated test suite for chat & gold purchase endpoints
-* Persistent conversation history in DB
-* Multi-user support with authentication
-* Audit logs for all transactions
 
 ---
 
