@@ -1,5 +1,16 @@
 # Simplify Money | AI Chat & Digital Gold Purchase Backend
 
+This backend is now **live**!
+
+## 🚀 Live Deployment
+
+- **API Base URL:** [https://simplify-money-ai-bot-replicate.onrender.com](https://simplify-money-ai-bot-replicate.onrender.com)
+- **API Docs (Swagger UI):** [https://simplify-money-ai-bot-replicate.onrender.com/docs](https://simplify-money-ai-bot-replicate.onrender.com/docs)
+
+You can use these endpoints to interact with the API or explore available routes and models.
+
+---
+
 ![Placeholder Image](asserts/img.png)
 
 ## Table of Contents
